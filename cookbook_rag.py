@@ -12,7 +12,7 @@ from typing import List
 import os
 from dotenv import load_dotenv
 
-# os.environ["OPENAI_API_KEY"] = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# os.environ
 load_dotenv()
 client = OpenAI()
 
