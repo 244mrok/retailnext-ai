@@ -11,6 +11,7 @@ from IPython.display import Image, display, HTML
 from typing import List
 import os
 from dotenv import load_dotenv
+import time
 
 # os.environ
 load_dotenv()
@@ -19,6 +20,8 @@ client = OpenAI()
 GPT_MODEL = "gpt-4o-mini"
 EMBEDDING_MODEL = "text-embedding-3-large"
 EMBEDDING_COST_PER_1K_TOKENS = 0.00013
+CACHE_DIR = "cache"
+CACHE_EXPIRE_SECONDS = 24 * 60 * 60  # 24時間
 
 ## Load and Prepare Dataset
 styles_filepath = "examples/data/sample_clothes/sample_styles.csv"
@@ -369,6 +372,19 @@ def answer_with_order_and_customer_history(question: str, customer_id: int):
 
 
 def select_best_banner_for_user(user_email: str):
+    # キャッシュファイルパス
+    safe_email = user_email.replace("@", "_at_").replace(".", "_dot_")
+    cache_path = os.path.join(CACHE_DIR, f"banner_{safe_email}.json")
+
+    # キャッシュが存在し、24時間以内ならそれを返す
+    if os.path.exists(cache_path):
+        mtime = os.path.getmtime(cache_path)
+        if time.time() - mtime < CACHE_EXPIRE_SECONDS:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                print("キャッシュからバナー選択結果を返します")
+                cached = json.load(f)
+                return cached["path"], cached["reason"]
+            
     # 1. バナー画像パスを自動生成
     banner_dir = "examples/data/sample_clothes/sample_banner/"
     banner_image_paths = [
@@ -428,11 +444,28 @@ def select_best_banner_for_user(user_email: str):
     else:
         raise ValueError("Unexpected response type")
     
+        # キャッシュ保存
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    with open(cache_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+        
     return result["path"], result["reason"]
 
 # ユーザーにおすすめ商品を提案する関数
 def recommend_items_for_user(user_email: str):
-# 顧客情報取得
+    # キャッシュファイルパス
+    safe_email = user_email.replace("@", "_at_").replace(".", "_dot_")
+    cache_path = os.path.join(CACHE_DIR, f"recommend_{safe_email}.json")
+
+    # キャッシュが存在し、24時間以内ならそれを返す
+    if os.path.exists(cache_path):
+        mtime = os.path.getmtime(cache_path)
+        if time.time() - mtime < CACHE_EXPIRE_SECONDS:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                print("キャッシュからおすすめ商品を返します")
+                return json.load(f)
+            
+    # 顧客情報取得
     customer_info = styles_customers_df.loc[
         styles_customers_df["email"] == user_email
     ]
@@ -497,6 +530,11 @@ def recommend_items_for_user(user_email: str):
             "name": row["productDisplayName"],
             "price": row.get("Price", "")
         })
+        
+    # キャッシュ保存
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    with open(cache_path, "w", encoding="utf-8") as f:
+        json.dump(items, f, ensure_ascii=False, indent=2)
     return items
 
 

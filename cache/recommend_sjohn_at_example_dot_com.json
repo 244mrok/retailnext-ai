@@ -1,0 +1,22 @@
+[
+  {
+    "img": "examples/data/sample_clothes/sample_images/27152.jpg",
+    "name": "Mark Taylor Men Striped Blue Shirt",
+    "price": 80
+  },
+  {
+    "img": "examples/data/sample_clothes/sample_images/14650.jpg",
+    "name": "Probase Men Face Print Blue Tshirts",
+    "price": 138
+  },
+  {
+    "img": "examples/data/sample_clothes/sample_images/2207.jpg",
+    "name": "ADIDAS Men Stripe Blue T-shirt",
+    "price": 193
+  },
+  {
+    "img": "examples/data/sample_clothes/sample_images/42020.jpg",
+    "name": "ADIDAS Men Brown Mudslide Shoes",
+    "price": 45
+  }
+]
