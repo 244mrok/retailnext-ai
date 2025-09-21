@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+.env
+*.sqlite3
+*.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
+
+# 環境・依存関係
+.venv/
+env/
+venv/
+*.egg-info/
+
+# データ・モデル・出力
+examples/data/sample_clothes/*.csv
+examples/data/sample_clothes/*.jpg
+examples/data/sample_clothes/*.png
+
+# バックアップ
+examples_bk/
+
+#自分の写真
+myimage*.jpg
+
+# ログ・一時ファイル
+*.log
+*.tmp
