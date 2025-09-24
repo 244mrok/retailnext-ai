@@ -1,286 +1,477 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Retail Next | Online Store</title>
-   <script src="https://cdn.tailwindcss.com"></script>
-   <link rel="stylesheet" href="style.css">
-   <link rel="preconnect" href="https://fonts.googleapis.com">
-   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-   <script>
-       tailwind.config = {
-           theme: {
-               extend: {
-                   fontFamily: {
-                       sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
-                   },
-               }
-           }
-       }
-   </script>
-</head>
-<body class="bg-white font-sans text-gray-800">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Retail Next | Online Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "Noto Sans JP", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-white font-sans text-gray-800">
+    <!-- ヘッダー -->
+    <header
+      id="header"
+      class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+    >
+      <div
+        class="container mx-auto px-4 py-3 flex justify-between items-center"
+      >
+        <!-- ロゴ -->
+        <div class="text-2xl font-bold tracking-wider">
+          <a href="#">Retail Next</a>
+        </div>
 
+        <!-- PC向けナビゲーション -->
+        <nav class="hidden lg:flex items-center space-x-8">
+          <a href="#" class="hover:text-gray-500">New</a>
+          <a href="#" class="hover:text-gray-500">Ranking</a>
+          <a href="#" class="hover:text-gray-500">Apparel</a>
+          <a href="#" class="hover:text-gray-500">Goods</a>
+          <a href="#" class="hover:text-gray-500">Magazine</a>
+        </nav>
 
-   <!-- ヘッダー -->
-   <header id="header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
-       <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-           <!-- ロゴ -->
-           <div class="text-2xl font-bold tracking-wider">
-               <a href="#">Retail Next</a>
-           </div>
+        <!-- アイコン群 -->
+        <div class="flex items-center space-x-4">
+          <button aria-label="Search" class="hover:text-gray-500">
+            <i data-lucide="search"></i>
+          </button>
+          <button
+            id="user-btn"
+            aria-label="User menu"
+            class="hover:text-gray-500"
+          >
+            <i data-lucide="user"></i>
+          </button>
+          <button aria-label="Cart" class="hover:text-gray-500">
+            <i data-lucide="shopping-cart"></i>
+          </button>
+          <button
+            id="hamburger-btn"
+            aria-label="Open menu"
+            class="lg:hidden z-50"
+          >
+            <i data-lucide="menu"></i>
+          </button>
+        </div>
+      </div>
+    </header>
 
+    <!-- モバイル向けナビゲーション -->
+    <div
+      id="mobile-menu"
+      class="hidden fixed inset-0 bg-white/90 backdrop-blur-sm z-40 lg:hidden"
+    >
+      <nav
+        class="flex flex-col items-center justify-center h-full space-y-8 text-2xl"
+      >
+        <a href="#" class="hover:text-gray-500">New</a>
+        <a href="#" class="hover:text-gray-500">Ranking</a>
+        <a href="#" class="hover:text-gray-500">Apparel</a>
+        <a href="#" class="hover:text-gray-500">Goods</a>
+        <a href="#" class="hover:text-gray-500">Magazine</a>
+      </nav>
+    </div>
 
-
-           <!-- PC向けナビゲーション -->
-           <nav class="hidden lg:flex items-center space-x-8">
-               <a href="#" class="hover:text-gray-500">New</a>
-               <a href="#" class="hover:text-gray-500">Ranking</a>
-               <a href="#" class="hover:text-gray-500">Apparel</a>
-               <a href="#" class="hover:text-gray-500">Goods</a>
-               <a href="#" class="hover:text-gray-500">Magazine</a>
-           </nav>
-
-
-           <!-- アイコン群 -->
-           <div class="flex items-center space-x-4">
-               <button class="hover:text-gray-500"><i data-lucide="search"></i></button>
-               <button id="user-btn" class="hover:text-gray-500"><i data-lucide="user"></i></button>
-               <button class="hover:text-gray-500"><i data-lucide="shopping-cart"></i></button>
-               <button id="hamburger-btn" class="lg:hidden z-50"><i data-lucide="menu"></i></button>
-           </div>
-       </div>
-   </header>
-
-
-   <!-- モバイル向けナビゲーション -->
-   <div id="mobile-menu" class="hidden fixed inset-0 bg-white/90 backdrop-blur-sm z-40 lg:hidden">
-       <nav class="flex flex-col items-center justify-center h-full space-y-8 text-2xl">
-           <a href="#" class="hover:text-gray-500">New</a>
-           <a href="#" class="hover:text-gray-500">Ranking</a>
-           <a href="#" class="hover:text-gray-500">Apparel</a>
-           <a href="#" class="hover:text-gray-500">Goods</a>
-           <a href="#" class="hover:text-gray-500">Magazine</a>
-       </nav>
-   </div>
-
-   <main>
-       <!-- ヒーローセクション -->
-       <!--<section class="h-screen bg-cover bg-center flex items-center justify-center text-white" style="background-image: url('https://placehold.co/1920x1080/d1d5db/374151?text=Main+Visual');"> -->
-    <section
+    <main>
+      <!-- ヒーローセクション -->
+      <!--<section class="h-screen bg-cover bg-center flex items-center justify-center text-white" style="background-image: url('https://placehold.co/1920x1080/d1d5db/374151?text=Main+Visual');"> -->
+      <section
         id="hero-banner"
         class="h-screen flex items-center justify-center text-white"
         style="
-            background-image: url('examples/data/sample_clothes/sample_banner/banner_base.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            background-color: #ffffff; /* 画像の余白部分の色を指定（任意） */
+          background-image: url('examples/data/sample_clothes/sample_banner/banner_base.png');
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          background-color: #ffffff; /* 画像の余白部分の色を指定（任意） */
         "
-    >
+      >
         <div class="text-center bg-black bg-opacity-30 p-8 rounded-lg">
-            <h1 class="text-5xl md:text-7xl font-bold mb-4">Style for Your Moment</h1>
-            <p class="text-lg md:text-xl">Find the one piece that’s just for you.</p>
+          <h1 class="text-5xl md:text-7xl font-bold mb-4">
+            Style for Your Moment
+          </h1>
+          <p class="text-lg md:text-xl">
+            Find the one piece that’s just for you.
+          </p>
         </div>
-    </section>
-    <!-- お勧めアイテム -->
-    <section class="py-16">
+      </section>
+      <!-- お勧めアイテム -->
+      <section class="py-16">
         <div class="container mx-auto px-4">
-           <h2 class="text-3xl font-bold text-center mb-8">Recommend for You</h2>
-           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-                <!-- 商品カード -->
-                <div class="group">
-                    <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2">
-                       <img src="examples/data/sample_clothes/sample_images/1849.jpg" alt="商品1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    </div>
-                    <h3 class="font-bold">White Coloer designed T-Shirts</h3>
-                    <p class="text-gray-600">$50</p>
-                </div>
-                <div class="group">
-                    <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2">
-                       <img src="examples/data/sample_clothes/sample_images/19406.jpg" alt="商品2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    </div>
-                    <h3 class="font-bold">Punning Shoes Ultra Light</h3>
-                    <p class="text-gray-600">$110</p>
-                </div>
-                <div class="group">
-                    <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2">
-                        <img src="examples/data/sample_clothes/sample_images/2265.jpg" alt="商品2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    </div>
-                        <h3 class="font-bold">Pure White T-SHirts</h3>
-                        <p class="text-gray-600">$45</p>
-                </div>
-                <div class="group">
-                    <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2">
-                        <img src="examples/data/sample_clothes/sample_images/18897.jpg" alt="商品2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    </div>
-                    <h3 class="font-bold">Green Casual Dress</h3>
-                    <p class="text-gray-600">$580</p>
-                </div>
-                <div class="text-center mt-12">
-                    <a href="#" class="inline-block bg-gray-800 text-white px-8 py-3 rounded-full hover:bg-gray-600 transition-colors">View More</a>
-                </div>
+          <h2 class="text-3xl font-bold text-center mb-8">Recommend for You</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+            <!-- 商品カード -->
+            <div class="group">
+              <div
+                class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2"
+              >
+                <img
+                  src="examples/data/sample_clothes/sample_images/1849.jpg"
+                  alt="商品1"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 class="font-bold">White Coloer designed T-Shirts</h3>
+              <p class="text-gray-600">$50</p>
             </div>
+            <div class="group">
+              <div
+                class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2"
+              >
+                <img
+                  src="examples/data/sample_clothes/sample_images/19406.jpg"
+                  alt="商品2"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 class="font-bold">Punning Shoes Ultra Light</h3>
+              <p class="text-gray-600">$110</p>
+            </div>
+            <div class="group">
+              <div
+                class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2"
+              >
+                <img
+                  src="examples/data/sample_clothes/sample_images/2265.jpg"
+                  alt="商品2"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 class="font-bold">Pure White T-SHirts</h3>
+              <p class="text-gray-600">$45</p>
+            </div>
+            <div class="group">
+              <div
+                class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2"
+              >
+                <img
+                  src="examples/data/sample_clothes/sample_images/18897.jpg"
+                  alt="商品2"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 class="font-bold">Green Casual Dress</h3>
+              <p class="text-gray-600">$80</p>
+            </div>
+            <div class="text-center mt-12">
+              <a
+                href="#"
+                class="inline-block bg-gray-800 text-white px-8 py-3 rounded-full hover:bg-gray-600 transition-colors"
+                >View More</a
+              >
+            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
+      <!-- 特集セクション -->
+      <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+          <h2 class="text-3xl font-bold text-center mb-8">Features</h2>
+          <div class="grid md:grid-cols-2 gap-8">
+            <!-- Feature 1 -->
+            <div class="group relative aspect-video rounded-lg overflow-hidden">
+              <img
+                src="examples/data/sample_clothes/sample_banner/Collection_normal_women.png"
+                alt="特集1"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div class="absolute inset-0 bg-black/10 flex items-end p-8">
+                <div class="text-white">
+                  <h3 class="text-2xl font-bold">2025 Autumn Collection</h3>
+                  <p>秋の新作コレクションをチェック</p>
+                </div>
+              </div>
+            </div>
 
-       <!-- 特集セクション -->
-       <section class="py-16 bg-gray-50">
-           <div class="container mx-auto px-4">
-               <h2 class="text-3xl font-bold text-center mb-8">Features</h2>
-               <div class="grid md:grid-cols-2 gap-8">
-                   <div class="group relative aspect-video rounded-lg overflow-hidden">
-                       <!--<img src="https://placehold.co/800x450/d1d5db/374151?text=Feature+1" alt="特集1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">-->
-                       <img src="examples/data/sample_clothes/sample_banner/Collection_normal_women.png" alt="特集1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                       <div class="absolute inset-0 bg-black bg-opacity-0 flex items-end p-8">
-                           <div class="text-white">
-                               <h3 class="text-2xl font-bold">2025 Autumn Collection</h3>
-                               <p>秋の新作コレクションをチェック</p>
-                           </div>
-                       </div>
-                   </div>
-                    <div class="group relative aspect-video rounded-lg overflow-hidden">
-                       <!--<img src="https://placehold.co/800x450/d1d5db/374151?text=Feature+2" alt="特集2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">-->
-                       <img src="examples/data/sample_clothes/sample_banner/Cordinate_normal_four.png" alt="特集2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        <div class="absolute inset-0 bg-black bg-opacity-10 flex items-end p-8">
-                           <div class="text-white">
-                               <h3 class="text-2xl font-bold">Staff Styling</h3>
-                               <p>スタッフによる最新コーディネート</p>
-                           </div>
-                       </div>
-                   </div>
-               </div>
-           </div>
-       </section>
+            <!-- Feature 2（兄弟要素として分離） -->
+            <div class="group relative aspect-video rounded-lg overflow-hidden">
+              <img
+                src="examples/data/sample_clothes/sample_banner/Cordinate_normal_four.png"
+                alt="特集2"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div class="absolute inset-0 bg-black/10 flex items-end p-8">
+                <div class="text-white">
+                  <h3 class="text-2xl font-bold">Staff Styling</h3>
+                  <p>スタッフによる最新コーディネート</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
 
+    <!-- チャットボット開閉ボタン（画面右下など） -->
+    <button
+      id="chatbot-toggle-btn"
+      style="
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 10001;
+        background: #374151;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        cursor: pointer;
+      "
+    >
+      💬
+    </button>
 
-   </main>
+    <!-- チャットボットUI（フッターの直前に追加） -->
+    <div
+      id="chatbot-container"
+      style="
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        width: 340px;
+        max-width: 90vw;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+        border: 1px solid #e5e7eb;
+        z-index: 9999;
+        font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        display: none;
+        flex-direction: column;
+      "
+    >
+      <button
+        id="chatbot-close-btn"
+        style="
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          background: #374151;
+          color: white;
+          border: none;
+          border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          font-size: 18px;
+          cursor: pointer;
+          z-index: 10002;
+        "
+      >
+        ×
+      </button>
+      <div
+        style="
+          padding: 12px 16px;
+          background: #374151;
+          color: white;
+          border-radius: 16px 16px 0 0;
+          font-weight: bold;
+        "
+      >
+        RetailNext Chatbot
+      </div>
 
-<!-- ...existing code... -->
+      <div
+        id="chatbot-messages"
+        style="
+          padding: 16px;
+          height: 220px;
+          overflow-y: auto;
+          font-size: 14px;
+          background: #f9fafb;
+        "
+      ></div>
+      <form
+        id="chatbot-form"
+        style="display: flex; border-top: 1px solid #e5e7eb"
+      >
+        <input
+          id="chatbot-input"
+          type="text"
+          placeholder="Your message..."
+          style="
+            flex: 1;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            outline: none;
+            background: transparent;
+          "
+        />
+        <input
+          type="file"
+          id="chatbot-image"
+          accept="image/*"
+          style="display: none"
+        />
+        <label
+          for="chatbot-image"
+          style="
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 0 16px;
+            border-radius: 16px 16px 16px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+          "
+          >Image</label
+        >
+        <button
+          type="submit"
+          style="
+            background: #374151;
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 16px 16px 16px 16px;
+            font-weight: bold;
+          "
+        >
+          Send
+        </button>
+      </form>
+    </div>
 
-<!-- チャットボット開閉ボタン（画面右下など） -->
-<button id="chatbot-toggle-btn" style="
-  position: fixed; right: 24px; bottom: 24px; z-index: 10001;
-  background: #374151; color: white; border: none; border-radius: 50%;
-  width: 48px; height: 48px; font-size: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-  cursor: pointer;
-">💬</button>
+    <!-- ...existing code... -->
+    <!-- フッター -->
+    <footer class="bg-gray-900 text-white py-12">
+      <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-4 gap-8 mb-8">
+          <div>
+            <h4 class="font-bold text-lg mb-4">About Us</h4>
+            <ul class="space-y-2 text-gray-400">
+              <li><a href="#" class="hover:text-white">Company</a></li>
+              <li><a href="#" class="hover:text-white">Careers</a></li>
+              <li><a href="#" class="hover:text-white">Press Release</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg mb-4">Help</h4>
+            <ul class="space-y-2 text-gray-400">
+              <li><a href="#" class="hover:text-white">Contact</a></li>
+              <li><a href="#" class="hover:text-white">FAQ</a></li>
+              <li><a href="#" class="hover:text-white">Delivery</a></li>
+              <li><a href="#" class="hover:text-white">Return・Exchange</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg mb-4">Legal</h4>
+            <ul class="space-y-2 text-gray-400">
+              <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+              <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+              <li>
+                <a href="#" class="hover:text-white"
+                  >Commercial Transactions Law</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-bold text-lg mb-4">Follow Us</h4>
+            <div class="flex space-x-4">
+              <a href="#" class="text-gray-400 hover:text-white"
+                ><i data-lucide="twitter"></i
+              ></a>
+              <a href="#" class="text-gray-400 hover:text-white"
+                ><i data-lucide="instagram"></i
+              ></a>
+              <a href="#" class="text-gray-400 hover:text-white"
+                ><i data-lucide="facebook"></i
+              ></a>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-gray-700 pt-8 text-center text-gray-500">
+          <p>&copy; 2025 RetailNext. All Rights Reserved.</p>
+        </div>
+      </div>
+    </footer>
 
-<!-- チャットボットUI（フッターの直前に追加） -->
-<div id="chatbot-container" style="
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  width: 340px;
-  max-width: 90vw;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
-  border: 1px solid #e5e7eb;
-  z-index: 9999;
-  font-family: 'Inter', 'Noto Sans JP', sans-serif;
-  display: none;
-  flex-direction: column;
-">
+    <!-- ログインモーダル（Mock用） -->
+    <div
+      id="login-modal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <div
+        style="
+          background: white;
+          padding: 32px 24px;
+          border-radius: 12px;
+          min-width: 280px;
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+        "
+      >
+        <h2 style="font-size: 20px; font-weight: bold; margin-bottom: 16px">
+          ログイン
+        </h2>
+        <input
+          id="login-username"
+          type="text"
+          placeholder="ユーザー名"
+          style="width: 100%; margin-bottom: 8px; padding: 8px"
+        />
+        <input
+          id="login-password"
+          type="password"
+          placeholder="パスワード"
+          style="width: 100%; margin-bottom: 16px; padding: 8px"
+        />
+        <button
+          id="login-btn"
+          style="
+            width: 100%;
+            background: #374151;
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+          "
+        >
+          ログイン
+        </button>
+      </div>
+    </div>
 
-  <button id="chatbot-close-btn" style="
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #374151;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    font-size: 18px;
-    cursor: pointer;
-    z-index: 10002;
-  ">×</button>
-  <div style="padding: 12px 16px; background: #374151; color: white; border-radius: 16px 16px 0 0; font-weight: bold;">
-    RetailNext Chatbot
-  </div>
-
-
-  <div id="chatbot-messages" style="padding: 16px; height: 220px; overflow-y: auto; font-size: 14px; background: #f9fafb;"></div>
-<form id="chatbot-form" style="display: flex; border-top: 1px solid #e5e7eb;">
-  <input id="chatbot-input" type="text" placeholder="Your message..." style="flex:1; border:none; padding:10px; font-size:14px; outline:none; background:transparent;">
-  <input type="file" id="chatbot-image" accept="image/*" style="display:none;">
-  <label for="chatbot-image" style="background:#e5e7eb; color:#374151; border:none; padding:0 16px; border-radius:16px 16px 16px 16px; cursor:pointer; font-weight:bold;display: flex; align-items: center;">Image</label>
-  <button type="submit" style="background:#374151; color:white; border:none; padding:0 16px; border-radius:16px 16px 16px 16px; font-weight:bold;">Send</button>
-</form>
-</div>
-
-<!-- ...existing code... -->
-<footer class="bg-gray-900 text-white py-12">
-<!-- ...existing code... -->
-   <!-- フッター -->
-   <footer class="bg-gray-900 text-white py-12">
-       <div class="container mx-auto px-4">
-           <div class="grid md:grid-cols-4 gap-8 mb-8">
-               <div>
-                   <h4 class="font-bold text-lg mb-4">About Us</h4>
-                   <ul class="space-y-2 text-gray-400">
-                       <li><a href="#" class="hover:text-white">Company</a></li>
-                       <li><a href="#" class="hover:text-white">Careers</a></li>
-                       <li><a href="#" class="hover:text-white">Press Release</a></li>
-                   </ul>
-               </div>
-               <div>
-                   <h4 class="font-bold text-lg mb-4">Help</h4>
-                   <ul class="space-y-2 text-gray-400">
-                       <li><a href="#" class="hover:text-white">Contact</a></li>
-                       <li><a href="#" class="hover:text-white">FAQ</a></li>
-                       <li><a href="#" class="hover:text-white">Delivery</a></li>
-                       <li><a href="#" class="hover:text-white">Return・Exchange</a></li>
-                   </ul>
-               </div>
-               <div>
-                   <h4 class="font-bold text-lg mb-4">Legal</h4>
-                   <ul class="space-y-2 text-gray-400">
-                       <li><a href="#" class="hover:text-white">Terms of Service</a></li>
-                       <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
-                       <li><a href="#" class="hover:text-white">Commercial Transactions Law</a></li>
-                   </ul>
-               </div>
-               <div>
-                   <h4 class="font-bold text-lg mb-4">Follow Us</h4>
-                   <div class="flex space-x-4">
-                       <a href="#" class="text-gray-400 hover:text-white"><i data-lucide="twitter"></i></a>
-                       <a href="#" class="text-gray-400 hover:text-white"><i data-lucide="instagram"></i></a>
-                       <a href="#" class="text-gray-400 hover:text-white"><i data-lucide="facebook"></i></a>
-                   </div>
-               </div>
-           </div>
-           <div class="border-t border-gray-700 pt-8 text-center text-gray-500">
-               <p>&copy; 2025 RetailNext. All Rights Reserved.</p>
-           </div>
-       </div>
-   </footer>
-
-<!-- ログインモーダル（Mock用） -->
-<div id="login-modal" style="
-  display:none; position:fixed; top:0; left:0; width:100vw; height:100vh;
-  background:rgba(0,0,0,0.3); z-index:10000; align-items:center; justify-content:center;
-">
-  <div style="background:white; padding:32px 24px; border-radius:12px; min-width:280px; box-shadow:0 4px 24px rgba(0,0,0,0.12);">
-    <h2 style="font-size:20px; font-weight:bold; margin-bottom:16px;">ログイン</h2>
-    <input id="login-username" type="text" placeholder="ユーザー名" style="width:100%; margin-bottom:8px; padding:8px;">
-    <input id="login-password" type="password" placeholder="パスワード" style="width:100%; margin-bottom:16px; padding:8px;">
-    <button id="login-btn" style="width:100%; background:#374151; color:white; padding:8px; border:none; border-radius:6px; font-weight:bold;">ログイン</button>
-  </div>
-</div>
-
-   <script src="https://unpkg.com/lucide@latest"></script>
-   <script>
-     lucide.createIcons();
-   </script>
-   <script src="script.js"></script>
-</body>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      lucide.createIcons();
+    </script>
+    <script src="script.js"></script>
+  </body>
 </html>
-
-
-

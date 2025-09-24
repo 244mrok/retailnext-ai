@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Form, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse, HTMLResponse    
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import json
@@ -10,7 +10,7 @@ from cookbook_rag import (
     analyze_image,
     find_matching_items_with_rag,
     styles_df,
-    get_customer_id_by_email, 
+    get_customer_id_by_email,
     answer_with_order_and_customer_history,
     check_match,
     select_best_banner_for_user,
@@ -43,7 +43,9 @@ async def chatbot_answer(email: str = Form(...), question: str = Form(...)):
     # HTMLで返す（チャットボット内で表示可能）
     return f"<div style='color:#374151; margin:8px 0;'><b>Bot:</b> {answer}</div>"
 
+
 ##本当はviewをjsでやるべきだが、簡易的にここでhtmlを生成して返す
+##使われてないのであれば削除可
 @app.post("/recommend")
 async def recommend(file: UploadFile = File(...)):
     try:
@@ -93,14 +95,14 @@ async def recommend(file: UploadFile = File(...)):
             # 実ファイルパス
             file_path = IMG_DIR / f"{item_id}.jpg"
             # 配信URL
-            src_url = f"examples/data/sample_clothes/sample_images/{item_id}.jpg"
+            # src_url = f"examples/data/sample_clothes/sample_images/{item_id}.jpg"
 
             # ファイルが無い場合の簡易フォールバック（必要に応じて削除）
             if not file_path.exists():
                 # ここでプレースホルダを使う・スキップするなどの対応
                 # continue  # ← 見せたくないならスキップ
                 pass
-            
+
             matched_rows = styles_df.loc[styles_df["id"] == int(item_id)]
             print("matched_rows:", matched_rows)
 
@@ -109,18 +111,20 @@ async def recommend(file: UploadFile = File(...)):
             else:
                 productDisplayName = "不明"
 
-            matched = styles_df.loc[styles_df["id"] == int(item_id), "productDisplayName"]
+            matched = styles_df.loc[
+                styles_df["id"] == int(item_id), "productDisplayName"
+            ]
             productDisplayName = matched.values[0] if len(matched) > 0 else "不明"
-            
-            paths.append(src_url)
+
+            paths.append(file_path)
             html_parts.append(
                 #    f'<img src="{src_url}" alt="{item.get("productDisplayName", item_id)}" '
                 #    f'style="display:inline-block;margin:1px;max-height:180px" />'
                 f'<div style="display:inline-block; margin:8px; text-align:center;">'
-                f'<img src="{src_url}" alt="{productDisplayName}, {item_id}" '
+                f'<img src="{file_path}" alt="{productDisplayName}, {item_id}" '
                 f'style="max-height:180px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);" /><br>'
                 f'<span style="font-size:15px; font-weight:bold;">{productDisplayName}</span><br>'
-#                f'<span style="font-size:14px; color:#374151;">¥{productDisplayPrice if productDisplayPrice is not None else "未定"}</span>'
+                #                f'<span style="font-size:14px; color:#374151;">¥{productDisplayPrice if productDisplayPrice is not None else "未定"}</span>'
                 f"</div>"
             )
 
@@ -138,6 +142,7 @@ async def recommend(file: UploadFile = File(...)):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 ##本当はviewをjsでやるべきだが、簡易的にここでhtmlを生成して返す
 @app.post("/recommendwithselected")
@@ -178,7 +183,7 @@ async def recommendWithSelected(file: UploadFile = File(...)):
             suggested_image = encode_image_to_base64(image_path)
             # Check if the items match
             match = json.loads(check_match(encoded_image, suggested_image))
-             # Display the image and the analysis results
+            # Display the image and the analysis results
             if match["answer"] == "yes":
                 # 商品名取得
                 matched_rows = styles_df.loc[styles_df["id"] == int(item_id)]
@@ -192,14 +197,14 @@ async def recommendWithSelected(file: UploadFile = File(...)):
                     f'<img src="{image_path}" style="display:inline;margin:1px;max-height:180px"/><br>'
                     f'<span style="font-size:15px; font-weight:bold;">{productDisplayName}</span><br>'
                     f'<span style="font-size:14px; color:#374151;">{match["reason"]}</span>'
-                    f'</div>'
+                    f"</div>"
                 )
 
         html = "".join(html_parts)
 
         result = {
             "html": html,  # ← ただの文字列（JSONシリアライズOK）
-        #    "paths": paths,  # ← 画像URLの配列
+            #    "paths": paths,  # ← 画像URLの配列
         }
         print("Recommendations:", result)  # ログ出力（必要に応じて削除）
 
@@ -209,6 +214,7 @@ async def recommendWithSelected(file: UploadFile = File(...)):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/select_banner")
 async def select_banner(email: str = Form(...)):
@@ -220,8 +226,8 @@ async def select_banner(email: str = Form(...)):
     except Exception as e:
         # 例外発生時はエラーメッセージを返す
         return JSONResponse(content={"error": str(e)}, status_code=500)
-    
-    
+
+
 @app.post("/recommend_items")
 async def recommend_items(email: str = Form(...)):
     try:

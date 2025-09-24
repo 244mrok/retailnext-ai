@@ -12,62 +12,66 @@ from typing import List
 import os
 from dotenv import load_dotenv
 import time
+import base64
+from config import (
+    GPT_MODEL,
+    EMBEDDING_MODEL,
+    CACHE_DIR,
+    STYLES_FILEPATH,
+    ORDER_HISTORY_FILEPATH,
+    CUSTOMERS_FILEPATH,
+    QANDA_FILEPATH,
+    CAMPAIGNS_FILEPATH,
+    BANNER_DIR,
+    IMG_DIR,
+    STYLES_WITH_EMB_FILEPATH,
+    TEST_IMAGE_FILENAMES,
+    CACHE_EXPIRE_SECONDS,
+    EMBEDDING_COST_PER_1K_TOKENS,
+)
+from utils import encode_image_to_base64
 
 # os.environ
 load_dotenv()
 client = OpenAI()
 
-GPT_MODEL = "gpt-4o-mini"
-EMBEDDING_MODEL = "text-embedding-3-large"
-EMBEDDING_COST_PER_1K_TOKENS = 0.00013
-CACHE_DIR = "cache"
-CACHE_EXPIRE_SECONDS = 24 * 60 * 60  # 24時間
 
 ## Load and Prepare Dataset
-styles_filepath = "examples/data/sample_clothes/sample_styles.csv"
-styles_df = pd.read_csv(styles_filepath, on_bad_lines="skip")
-print(styles_df.head())
-print(
-    "Opened dataset successfully. Dataset has {} items of clothing.".format(
-        len(styles_df)
-    )
-)
-styles_orderhistory_filepath = "examples/data/sample_clothes/orderHistory.csv"
-styles_orderhistory_df = pd.read_csv(styles_orderhistory_filepath, on_bad_lines="skip")
-print(styles_orderhistory_df.head())
-print(
-    "Opened order history dataset successfully. Dataset has {} items of clothing.".format(
-        len(styles_orderhistory_df)
-    )
-)
-styles_customers_filepath = "examples/data/sample_clothes/customerProfile.csv"
-styles_customers_df = pd.read_csv(styles_customers_filepath, on_bad_lines="skip")
-print(styles_customers_df.head())
-print(
-    "Opened customers dataset successfully. Dataset has {} items of clothing.".format(
-        len(styles_customers_df)
-    )
-)
+def load_datasets_with_log():
+    """各CSVを読み込み、内容と件数をログ出力し、DataFrameをまとめて返す"""
+    datasets = {}
+    files = [
+        ("styles", STYLES_FILEPATH, "items of clothing"),
+        ("order_history", ORDER_HISTORY_FILEPATH, "order history records"),
+        ("customers", CUSTOMERS_FILEPATH, "Customer Profile"),
+        ("qanda", QANDA_FILEPATH, "Q and A"),
+        ("campaigns", CAMPAIGNS_FILEPATH, "Marketing Campaigns"),
+    ]
+    for key, path, label in files:
+        df = pd.read_csv(path, on_bad_lines="skip")
+        print(df.head())
+        print(f"Opened {key} dataset successfully. Dataset has {len(df)} {label}.")
+        datasets[key] = df
+    return datasets
 
-styles_qanda_filepath = "examples/data/sample_clothes/qanda.csv"
-styles_qanda_df = pd.read_csv(styles_qanda_filepath, on_bad_lines="skip")
-print(styles_qanda_df.head())
-print(
-    "Opened Q&A dataset successfully. Dataset has {} items of clothing.".format(
-        len(styles_qanda_df)
-    )
-)
 
-styles_campaigns_filepath = "examples/data/sample_clothes/campaigns.csv"
-styles_campaigns_df = pd.read_csv(styles_campaigns_filepath, on_bad_lines="skip")
-print(styles_campaigns_df.head())
-print(
-    "Opened campaigns dataset successfully. Dataset has {} items of clothing.".format(
-        len(styles_campaigns_df)
-    )
-)
+datasets = load_datasets_with_log()
+styles_df = datasets["styles"]
+styles_orderhistory_df = datasets["order_history"]
+styles_customers_df = datasets["customers"]
+styles_qanda_df = datasets["qanda"]
+styles_campaigns_df = datasets["campaigns"]
 
-## Batch Embedding Logic
+
+# Function to generate embeddings for a given column in a DataFrame
+def generate_embeddings(df, column_name):
+    # Initialize an empty list to store embeddings
+    descriptions = df[column_name].astype(str).tolist()
+    embeddings = embed_corpus(descriptions)
+
+    # Add the embeddings as a new column to the DataFrame
+    df["embeddings"] = embeddings
+    print("Embeddings created successfully.")
 
 
 # Simple function to take in a list of text objects and return them as a list of embeddings
@@ -125,35 +129,10 @@ def embed_corpus(
         return embeddings
 
 
-# Function to generate embeddings for a given column in a DataFrame
-def generate_embeddings(df, column_name):
-    # Initialize an empty list to store embeddings
-    descriptions = df[column_name].astype(str).tolist()
-    embeddings = embed_corpus(descriptions)
-
-    # Add the embeddings as a new column to the DataFrame
-    df["embeddings"] = embeddings
-    print("Embeddings created successfully.")
-
-
 generate_embeddings(styles_df, "productDisplayName")
 print("Writing embeddings to file ...")
-styles_df.to_csv(
-    "examples/data/sample_clothes/sample_styles_with_embeddings.csv", index=False
-)
-print("Embeddings successfully stored in sample_styles_with_embeddings.csv")
-
-# styles_df = pd.read_csv('examples/data/sample_clothes/sample_styles_with_embeddings.csv', on_bad_lines='skip')
-
-# # Convert the 'embeddings' column from string representations of lists to actual lists of floats
-# styles_df['embeddings'] = styles_df['embeddings'].apply(lambda x: ast.literal_eval(x))
-
-print(styles_df.head())
-print(
-    "Opened dataset successfully. Dataset has {} items of clothing along with their embeddings.".format(
-        len(styles_df)
-    )
-)
+styles_df.to_csv(STYLES_WITH_EMB_FILEPATH, index=False)
+print("Embeddings successfully stored in STYLES_WITH_EMB_FILEPATH")
 
 
 def cosine_similarity_manual(vec1, vec2):
@@ -384,9 +363,9 @@ def select_best_banner_for_user(user_email: str):
                 print("キャッシュからバナー選択結果を返します")
                 cached = json.load(f)
                 return cached["path"], cached["reason"]
-            
+
     # 1. バナー画像パスを自動生成
-    banner_dir = "examples/data/sample_clothes/sample_banner/"
+    banner_dir = BANNER_DIR
     banner_image_paths = [
         os.path.join(banner_dir, fname)
         for fname in os.listdir(banner_dir)
@@ -443,13 +422,14 @@ def select_best_banner_for_user(user_email: str):
         result = raw_content
     else:
         raise ValueError("Unexpected response type")
-    
+
         # キャッシュ保存
     os.makedirs(CACHE_DIR, exist_ok=True)
     with open(cache_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
-        
+
     return result["path"], result["reason"]
+
 
 # ユーザーにおすすめ商品を提案する関数
 def recommend_items_for_user(user_email: str):
@@ -464,11 +444,9 @@ def recommend_items_for_user(user_email: str):
             with open(cache_path, "r", encoding="utf-8") as f:
                 print("キャッシュからおすすめ商品を返します")
                 return json.load(f)
-            
+
     # 顧客情報取得
-    customer_info = styles_customers_df.loc[
-        styles_customers_df["email"] == user_email
-    ]
+    customer_info = styles_customers_df.loc[styles_customers_df["email"] == user_email]
     customer_info_dict = (
         customer_info.to_dict(orient="records")[0] if len(customer_info) > 0 else {}
     )
@@ -518,19 +496,21 @@ def recommend_items_for_user(user_email: str):
     )
     answer = response.choices[0].message.content
     print("AI Recommended Items:\n", answer)
-    
+
     # 余計なタグや空白を除去
     cleaned = answer.replace("```json", "").replace("```", "").strip()
     items_list = json.loads(cleaned)  # ここでPythonのリストに変換
 
     items = []
     for row in items_list:
-        items.append({
-            "img": f"examples/data/sample_clothes/sample_images/{row['id']}.jpg",
-            "name": row["productDisplayName"],
-            "price": row.get("Price", "")
-        })
-        
+        items.append(
+            {
+                "img": f"examples/data/sample_clothes/sample_images/{row['id']}.jpg",
+                "name": row["productDisplayName"],
+                "price": row.get("Price", ""),
+            }
+        )
+
     # キャッシュ保存
     os.makedirs(CACHE_DIR, exist_ok=True)
     with open(cache_path, "w", encoding="utf-8") as f:
@@ -580,21 +560,11 @@ def check_match(reference_image_base64, suggested_image_base64):
     return features
 
 
-
-
 ##########################下記はJyupyter Notebook用のコード########################
-import base64
-
-
-def encode_image_to_base64(image_path):
-    with open(image_path, "rb") as image_file:
-        encoded_image = base64.b64encode(image_file.read())
-        return encoded_image.decode("utf-8")
-
 
 # Set the path to the images and select a test image
-image_path = "examples/data/sample_clothes/sample_images/"
-test_images = ["2133.jpg", "7143.jpg", "4226.jpg"]
+image_path = IMG_DIR
+test_images = TEST_IMAGE_FILENAMES
 
 # Encode the test image to base64
 reference_image = image_path + test_images[0]
