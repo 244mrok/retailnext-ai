@@ -468,6 +468,42 @@
       </div>
     </div>
 
+    <!-- ローディングオーバーレイ -->
+    <div
+      id="loading-overlay"
+      style="
+        display: none;
+        position: fixed;
+        z-index: 99999;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      "
+    >
+      <div
+        class="spinner"
+        style="
+          width: 48px;
+          height: 48px;
+          border: 6px solid #ccc;
+          border-top: 6px solid #374151;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 16px;
+        "
+      ></div>
+      <div style="color: #374151; font-size: 18px; font-weight: bold">
+        Now Loading…
+      </div>
+    </div>
+
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
       lucide.createIcons();

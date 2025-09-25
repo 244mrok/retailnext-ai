@@ -52,3 +52,7 @@ body {
   border-color: #374151;
   background: #fff;
 }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

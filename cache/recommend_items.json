@@ -1,0 +1,46 @@
+{
+  "emily_dot_j_at_gmail_dot_com": [
+    {
+      "img": "examples/data/sample_clothes/sample_images/37166.jpg",
+      "name": "United Colors of Benetton Women Red Top",
+      "price": 198
+    },
+    {
+      "img": "examples/data/sample_clothes/sample_images/24538.jpg",
+      "name": "Mother Earth Women Red Printed Kurta",
+      "price": 63
+    },
+    {
+      "img": "examples/data/sample_clothes/sample_images/59021.jpg",
+      "name": "Carlton London Women Red Heels",
+      "price": 79
+    },
+    {
+      "img": "examples/data/sample_clothes/sample_images/56872.jpg",
+      "name": "HM Women Red Sandals",
+      "price": 43
+    }
+  ],
+  "sjohn_at_example_dot_com": [
+    {
+      "img": "examples/data/sample_clothes/sample_images/27152.jpg",
+      "name": "Mark Taylor Men Striped Blue Shirt",
+      "price": 80
+    },
+    {
+      "img": "examples/data/sample_clothes/sample_images/14650.jpg",
+      "name": "Probase Men Face Print Blue Tshirts",
+      "price": 138
+    },
+    {
+      "img": "examples/data/sample_clothes/sample_images/23155.jpg",
+      "name": "Mark Taylor Men Blue Striped Shirt",
+      "price": 94
+    },
+    {
+      "img": "examples/data/sample_clothes/sample_images/22244.jpg",
+      "name": "ID Men Blue Casual Shoes",
+      "price": 130
+    }
+  ]
+}

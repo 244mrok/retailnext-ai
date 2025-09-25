@@ -2,10 +2,12 @@
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', function () {
+  showLoading(false); // 画面ロード直後にローディング非表示
+
+  // DOM要素の取得
   const header = document.getElementById('header');
   const hamburgerBtn = document.getElementById('hamburger-btn');
   const mobileMenu = document.getElementById('mobile-menu');
-
 
   // スクロール時のヘッダー背景変更
   window.addEventListener('scroll', () => {
@@ -67,59 +69,52 @@ document.addEventListener('DOMContentLoaded', function () {
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
-    const userMsg = input.value.trim();
-    const imageFile = imageInput.files[0];
+    try {
+      showLoading(true);
+      const userMsg = input.value.trim();
+      const imageFile = imageInput.files[0];
 
-    if (userMsg) {
-      // currentUserがセットされていれば名前を表示
-      const userLabel = currentUser ? `${currentUser}` : "You";
-      messages.innerHTML += `<div style="margin-bottom:8px;"><b>${userLabel}:</b> ${userMsg}</div>`;
-      input.value = '';
-      const formData = new FormData();
-      formData.append('email', currentUser ? currentUser : 'unknown');
-      formData.append('question', userMsg);
-      const res = await fetch('http://localhost:8000/chatbot_answer', {
-        method: 'POST',
-        body: formData
-      });
-      const html = await res.text();
-      document.getElementById('chatbot-messages').innerHTML += html;
-    }
-
-    if (imageFile) {
-      //messages.innerHTML += `<div style="margin-bottom:8px;"><b>あなた:</b> 画像をアップロードしました。</div>`;
-      // API呼び出し
-      const formData = new FormData();
-      formData.append('file', imageFile);
-
-      //const response = await fetch('http://localhost:8000/recommend', {
-      const response = await fetch('http://localhost:8000/recommendwithselected', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        messages.innerHTML += `<div style="margin-bottom:8px;"><b>Bot:</b> API Error: ${response.status}</div>`;
-        return;
+      if (userMsg) {
+        const userLabel = currentUser ? `${currentUser}` : "You";
+        messages.innerHTML += `<div style="margin-bottom:8px;"><b>${userLabel}:</b> ${userMsg}</div>`;
+        input.value = '';
+        const formData = new FormData();
+        formData.append('email', currentUser ? currentUser : 'unknown');
+        formData.append('question', userMsg);
+        const res = await fetch('http://localhost:8000/chatbot_answer', {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) throw new Error(`API Error: ${res.status}`);
+        const html = await res.text();
+        document.getElementById('chatbot-messages').innerHTML += html;
       }
-      const data = await response.json();
-      console.log("API Response:", data); // デバッグ用ログ
 
-      // 推薦結果を表示
-      //if (data.recommendations && data.recommendations.length > 0) {
-      if (data.recommendations) {
-        messages.innerHTML += `<div style="margin-bottom:8px;"><b>Bot:</b> Recommend Items:</div>`;
-        //data.recommendations.forEach(item => {
-        // messages.innerHTML += `<div style="margin-bottom:4px;">・${item.name} (${item.category}, ${item.gender})</div>`;
-        //   messages.innerHTML += item.html;
-        //});
-        messages.innerHTML += data.recommendations.html;
-      } else {
-        messages.innerHTML += `<div style="margin-bottom:8px;"><b>Bot:</b> Recommend Items not found.</div>`;
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        const response = await fetch('http://localhost:8000/recommendwithselected', {
+          method: 'POST',
+          body: formData
+        });
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        const data = await response.json();
+        console.log("API Response:", data);
+        if (data.recommendations) {
+          messages.innerHTML += `<div style="margin-bottom:8px;"><b>Bot:</b> Recommend Items:</div>`;
+          messages.innerHTML += data.recommendations.html;
+        } else {
+          messages.innerHTML += `<div style="margin-bottom:8px;"><b>Bot:</b> Recommend Items not found.</div>`;
+        }
+        messages.scrollTop = messages.scrollHeight;
+        imageInput.value = '';
       }
-      messages.scrollTop = messages.scrollHeight;
-      imageInput.value = '';
+    } catch (err) {
+      messages.innerHTML += `<div style="color:red; margin-bottom:8px;"><b>エラー:</b> ${err.message}</div>`;
+    } finally {
+      showLoading(false);
     }
+    messages.scrollTop = messages.scrollHeight;
   });
 
   // ログインモーダル表示（例: ユーザーアイコン押下で表示）
@@ -140,14 +135,18 @@ document.addEventListener('DOMContentLoaded', function () {
       // チャット欄にログインユーザー名を表示
       const messages = document.getElementById('chatbot-messages');
       messages.innerHTML += `<div style="margin-bottom:8px; color:#374151;"> ${currentUser} logged in</div>`;
-      
-      // ここでバナー画像をAIで選択して切り替え(非同期)
-      fetchBestBanner(currentUser);
-      // おすすめ商品を取得して表示(非同期)
-      fetchRecommendItems(currentUser);
 
-      alert(`Welcome, ${username}！（Mock Login）`);
-
+      try {
+        showLoading(true);
+        await Promise.all([
+          fetchBestBanner(username),
+          fetchRecommendItems(username)
+        ]);
+      } catch (err) {
+        alert("エラー: " + err.message);
+      } finally {
+        showLoading(false);
+      }
     } else {
       alert('Please enter your username and password');
     }
@@ -195,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const grid = document.querySelector('.grid.grid-cols-2.md\\:grid-cols-4');
         grid.innerHTML = ""; // 既存カードを消す
         data.items.forEach(item => {
-         grid.innerHTML += `
+          grid.innerHTML += `
             <div class="group">
               <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2">
                 <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -204,13 +203,14 @@ document.addEventListener('DOMContentLoaded', function () {
              <p class="text-gray-600">${"$" + item.price}</p>
            </div>
           `;
-       });
+        });
       } else if (data.error) {
         alert("おすすめ取得エラー: " + data.error);
       }
     } catch (err) {
       alert("通信エラー: " + err);
     }
+
   }
 
 
@@ -236,6 +236,12 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
+// ローディング表示制御
+function showLoading(show) {
+  const overlay = document.getElementById('loading-overlay');
+  overlay.style.display = show ? 'flex' : 'none';
+}
 
 
 
