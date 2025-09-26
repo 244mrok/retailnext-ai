@@ -28,14 +28,16 @@
     <!-- ヘッダー -->
     <header
       id="header"
-      class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+      class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white shadow"
     >
       <div
-        class="container mx-auto px-4 py-3 flex justify-between items-center"
+        class="container mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center relative"
       >
         <!-- ロゴ -->
-        <div class="text-2xl font-bold tracking-wider">
-          <a href="#">Retail Next</a>
+        <div
+          class="text-2xl font-bold tracking-wider mb-2 md:mb-0 text-gray-900"
+        >
+          <a href="#" class="text-gray-900 hover:text-gray-600">Retail Next</a>
         </div>
 
         <!-- PC向けナビゲーション -->
@@ -47,9 +49,56 @@
           <a href="#" class="hover:text-gray-500">Magazine</a>
         </nav>
 
-        <!-- アイコン群 -->
-        <div class="flex items-center space-x-4">
-          <button aria-label="Search" class="hover:text-gray-500">
+        <!-- 検索・アイコン群 -->
+        <div
+          class="flex items-center space-x-4 w-full md:w-auto mt-2 md:mt-0 relative"
+        >
+          <div class="relative w-full md:w-auto">
+            <input
+              id="query"
+              placeholder="Search products"
+              autocomplete="off"
+              style="
+                color: #374151;
+                background: #f3f4f6;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-size: 15px;
+                font-family: inherit;
+                outline: none;
+                box-sizing: border-box;
+                text-align: center;
+                width: 220px;
+              "
+            />
+            <ul
+              id="suggest"
+              style="
+                position: absolute;
+                top: 44px;
+                left: 0;
+                width: 220px;
+                background: #fff;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                z-index: 1000;
+                list-style: none;
+                margin: 4px 0 0 0;
+                padding: 0;
+                max-height: 240px;
+                overflow-y: auto;
+                font-size: 15px;
+                display: none;
+              "
+            ></ul>
+          </div>
+          <button
+            id="search-btn"
+            aria-label="Search"
+            class="hover:text-gray-500"
+          >
             <i data-lucide="search"></i>
           </button>
           <button
@@ -71,6 +120,7 @@
           </button>
         </div>
       </div>
+      <div id="search-results" style="max-width: 900px; margin: 0 auto"></div>
     </header>
 
     <!-- モバイル向けナビゲーション -->
@@ -89,7 +139,7 @@
       </nav>
     </div>
 
-    <main>
+    <main class="pt-20">
       <!-- ヒーローセクション -->
       <!--<section class="h-screen bg-cover bg-center flex items-center justify-center text-white" style="background-image: url('https://placehold.co/1920x1080/d1d5db/374151?text=Main+Visual');"> -->
       <section

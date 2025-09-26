@@ -57,3 +57,48 @@ body {
   to { transform: rotate(360deg); }
 }
 
+#header {
+   color: #1f2937; /* text-gray-800 */
+}
+#header a,
+#header button {
+   color: #1f2937; /* text-gray-800 */
+}
+
+#suggest {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  width: 220px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 1000;
+  list-style: none;
+  margin: 4px 0 0 0;
+  padding: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  font-size: 15px;
+  display: none;
+}
+#suggest li {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+}
+#suggest li:last-child {
+  border-bottom: none;
+}
+#suggest li:hover {
+  background: #f3f4f6;
+}
+#suggest .suggest-icon {
+  margin-right: 8px;
+  color: #374151;
+  font-size: 16px;
+}

@@ -4,7 +4,11 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import json
 import base64
+import os
+from typing import Optional, Dict
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from opensearchpy import OpenSearch
 from cookbook_rag import (
     encode_image_to_base64,  # 使っていないなら削除可
     analyze_image,
@@ -172,33 +176,44 @@ async def recommendWithSelected(file: UploadFile = File(...)):
             ]
 
         # 類似アイテム検索
-        matching_items = find_matching_items_with_rag(filtered_items, item_descs)
+        matching_items = []
+        cnt = 0
+        while not matching_items and cnt < 3:
+            matching_items = find_matching_items_with_rag(filtered_items, item_descs)
+            print(f"Attempt {cnt}: Matching items found:", matching_items)
+            cnt += 1
 
         html_parts = []
-        for i, item in enumerate(matching_items):
-            item_id = item["id"]
-            # Path to the image file
-            image_path = f"examples/data/sample_clothes/sample_images/{item_id}.jpg"
-            # Encode the test image to base64
-            suggested_image = encode_image_to_base64(image_path)
-            # Check if the items match
-            match = json.loads(check_match(encoded_image, suggested_image))
-            # Display the image and the analysis results
-            if match["answer"] == "yes":
-                # 商品名取得
-                matched_rows = styles_df.loc[styles_df["id"] == int(item_id)]
-                if len(matched_rows) > 0:
-                    productDisplayName = matched_rows["productDisplayName"].values[0]
-                else:
-                    productDisplayName = ""
-                # 理由と商品名をHTMLで表示
-                html_parts.append(
-                    f'<div style="display:inline-block; margin:8px; text-align:center;">'
-                    f'<img src="{image_path}" style="display:inline;margin:1px;max-height:180px"/><br>'
-                    f'<span style="font-size:15px; font-weight:bold;">{productDisplayName}</span><br>'
-                    f'<span style="font-size:14px; color:#374151;">{match["reason"]}</span>'
-                    f"</div>"
-                )
+        retry_cnt = 0
+        while not html_parts and retry_cnt < 3:
+            for i, item in enumerate(matching_items):
+                item_id = item["id"]
+                # Path to the image file
+                image_path = f"examples/data/sample_clothes/sample_images/{item_id}.jpg"
+                # Encode the test image to base64
+                suggested_image = encode_image_to_base64(image_path)
+                # Check if the items match
+                match = json.loads(check_match(encoded_image, suggested_image))
+                # Display the image and the analysis results
+                if match["answer"] == "yes":
+                    # 商品名取得
+                    matched_rows = styles_df.loc[styles_df["id"] == int(item_id)]
+                    if len(matched_rows) > 0:
+                        productDisplayName = matched_rows["productDisplayName"].values[
+                            0
+                        ]
+                    else:
+                        productDisplayName = ""
+                    # 理由と商品名をHTMLで表示
+                    html_parts.append(
+                        f'<div style="display:inline-block; margin:8px; text-align:center;">'
+                        f'<img src="{image_path}" style="display:inline;margin:1px;max-height:180px"/><br>'
+                        f'<span style="font-size:15px; font-weight:bold;">{productDisplayName}</span><br>'
+                        f'<span style="font-size:14px; color:#374151;">{match["reason"]}</span>'
+                        f"</div>"
+                    )
+            print(f"Attempt {retry_cnt}: Match result:", html_parts)
+            retry_cnt += 1
 
         html = "".join(html_parts)
 
@@ -235,3 +250,143 @@ async def recommend_items(email: str = Form(...)):
         return JSONResponse(content={"items": items})
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
+# 検索エンジン
+OS_HOST = os.getenv("OS_HOST", "http://127.0.0.1:9200")
+INDEX = "products"
+
+client = OpenSearch(OS_HOST, timeout=10, max_retries=2, retry_on_timeout=True)
+
+
+class SearchReq(BaseModel):
+    q: Optional[str] = None
+    filters: Optional[Dict] = None
+    sort: Optional[str] = "score"
+    page: int = 1
+    per_page: int = 24
+
+
+def build_query(payload: SearchReq):
+    must = []
+    if payload.q:
+        must.append(
+            {
+                "multi_match": {
+                    "query": payload.q,
+                    "fields": ["productDisplayName^3", "articleType", "subCategory"],
+                    "fuzziness": "AUTO",
+                }
+            }
+        )
+    else:
+        must.append({"match_all": {}})
+
+    filters = []
+    f = payload.filters or {}
+    if "brand" in f:
+        filters.append({"terms": {"brand": f["brand"]}})
+    if "color" in f:
+        filters.append({"terms": {"baseColour": f["color"]}})
+    if f.get("in_stock") is not None:
+        filters.append({"term": {"in_stock": bool(f["in_stock"])}})
+    if "price_min" in f or "price_max" in f:
+        rng = {}
+        if f.get("price_min") is not None:
+            rng["gte"] = f["price_min"]
+        if f.get("price_max") is not None:
+            rng["lte"] = f["price_max"]
+        filters.append({"range": {"price": rng}})
+
+    sort = [{"_score": "desc"}]
+    if payload.sort == "price_asc":
+        sort = [{"price": "asc"}]
+    if payload.sort == "price_desc":
+        sort = [{"price": "desc"}]
+    if payload.sort == "new":
+        sort = [{"updated_at": "desc"}]
+
+    from_ = max(0, (payload.page - 1) * payload.per_page)
+
+    body = {
+        "from": from_,
+        "size": payload.per_page,
+        "query": {"bool": {"must": must, "filter": filters}},
+        "aggs": {
+            "by_brand": {"terms": {"field": "brand", "size": 50}},
+            "by_color": {"terms": {"field": "baseColour", "size": 50}},
+        },
+        "sort": sort,
+    }
+    return body
+
+
+@app.post("/search")
+def search(payload: SearchReq):
+    try:
+        body = build_query(payload)
+        resp = client.search(index=INDEX, body=body)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    facets = {
+        "brand": resp["aggregations"]["by_brand"]["buckets"],
+        "color": resp["aggregations"]["by_color"]["buckets"],
+    }
+    hits = [
+        {**h["_source"], "id": h["_id"], "score": h["_score"]}
+        for h in resp["hits"]["hits"]
+    ]
+    return {
+        "hits": hits,
+        "total": resp["hits"]["total"]["value"],
+        "facets": facets,
+        "page": payload.page,
+        "per_page": payload.per_page,
+    }
+
+
+class SuggestReq(BaseModel):
+    prefix: str
+
+
+@app.post("/suggest")
+def suggest(req: SuggestReq):
+    body = {
+        "suggest": {
+            "name": {
+                "prefix": req.prefix,
+                "completion": {
+                    "field": "productDisplayName_suggest",
+                    "skip_duplicates": True,
+                    "size": 8,
+                },
+            }
+        }
+    }
+    r = client.search(index=INDEX, body=body)
+    opts = r["suggest"]["name"][0].get("options", [])
+    return {"suggestions": [o["text"] for o in opts]}
+
+
+class TypeAheadReq(BaseModel):
+    prefix: str
+
+
+@app.post("/typeahead")
+def typeahead(req: TypeAheadReq):
+    body = {
+        "query": {
+            "multi_match": {
+                "query": req.prefix,
+                "type": "bool_prefix",
+                "fields": [
+                    "productDisplayName_sayt",
+                    "productDisplayName_sayt._2gram",
+                    "productDisplayName_sayt._3gram",
+                ],
+            }
+        },
+        "size": 8,
+    }
+    r = client.search(index=INDEX, body=body)
+    return {"hits": [h["_source"] for h in r["hits"]["hits"]]}

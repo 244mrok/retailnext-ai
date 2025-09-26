@@ -249,5 +249,73 @@ function showChatLoading(show) {
 
 
 
+//検索エンジン
+const query = document.getElementById("query");
+const ul = document.getElementById("suggest");
+let timer, ctrl;
 
+function debounce(fn, ms) { return (...a) => { clearTimeout(timer); timer = setTimeout(() => fn(...a), ms); }; }
 
+async function call(path, body) {
+  if (ctrl) ctrl.abort();
+  ctrl = new AbortController();
+  try {
+    const r = await fetch(`http://localhost:8000/${path}`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body), signal: ctrl.signal
+    });
+    return r.json();
+  } catch (err) {
+    if (err.name === "AbortError") return; // AbortErrorは無視
+    throw err;
+  }
+}
+
+query.addEventListener("input", debounce(async e => {
+  const prefix = e.target.value.trim();
+  if (prefix.length < 3) {
+    ul.innerHTML = "";
+    ul.style.display = "none";
+    return;
+  }
+  if (!prefix) { ul.innerHTML = ""; return; }
+
+  // completion
+  const s = await call("suggest", { prefix });
+  // typeahead（切替テストしたい時はこっち）
+  // const s = await call("typeahead", { prefix });
+
+  ul.innerHTML = (s.suggestions
+    ? s.suggestions
+    : s.hits.map(h => h.productDisplayName)
+  ).map(t =>
+    `<li onclick="document.getElementById('query').value='${t}'; ul.style.display='none';">
+    <span class="suggest-icon">🔍</span>
+    <span>${t}</span>
+  </li>`
+  ).join('');
+  ul.style.display = ul.innerHTML ? "block" : "none";
+}, 120));
+
+async function search({ q, filters = {}, sort = "score", page = 1, per_page = 24 }) {
+  const r = await fetch("http://localhost:8000/search", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ q, filters, sort, page, per_page })
+  });
+  return r.json();
+}
+
+function showSuggest(items) {
+  if (items.length === 0) {
+    suggest.style.display = "none";
+    return;
+  }
+  suggest.innerHTML = items.map(item =>
+    `<li style="padding:8px 12px; cursor:pointer; border-bottom:1px solid #f3f4f6;" 
+      onmouseover="this.style.background='#f3f4f6'" 
+      onmouseout="this.style.background=''" 
+      onclick="document.getElementById('query').value='${item}'; suggest.style.display='none';"
+    >${item}</li>`
+  ).join('');
+  suggest.style.display = "block";
+}
