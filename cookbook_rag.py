@@ -79,6 +79,24 @@ def generate_embeddings(df, column_name):
     print("Embeddings created successfully.")
 
 
+def generate_embeddings_multi(df, column_names):
+    """
+    指定した複数カラムを「カラム名:値」として連結し、ベクトル化する
+    例: column_names=["productDisplayName", "price", "year"]
+    """
+
+    def make_embedding_text(row):
+        return " ".join([f"{col}:{row[col]}" for col in column_names])
+
+    # 各行ごとにembedding用テキストを作成
+    embedding_texts = df.apply(make_embedding_text, axis=1).tolist()
+    embeddings = embed_corpus(embedding_texts)
+
+    # Add the embeddings as a new column to the DataFrame
+    df["embeddings"] = embeddings
+    print("Embeddings created successfully.")
+
+
 # Simple function to take in a list of text objects and return them as a list of embeddings
 @retry(wait=wait_random_exponential(min=1, max=40), stop=stop_after_attempt(10))
 def get_embeddings(input: List):
@@ -106,6 +124,7 @@ def embed_corpus(
         encoded_article[:max_context_len]
         for encoded_article in encoding.encode_batch(corpus)
     ]
+    # print(f"***encoded_corpus: {encoded_corpus}")
 
     # Calculate corpus statistics: the number of inputs, the total number of tokens, and the estimated cost to embed
     num_tokens = sum(len(article) for article in encoded_corpus)
@@ -134,7 +153,19 @@ def embed_corpus(
         return embeddings
 
 
-generate_embeddings(styles_df, "productDisplayName")
+# generate_embeddings(styles_df, "productDisplayName")
+column_names = [
+    "gender",
+    "masterCategory",
+    "subCategory",
+    "articleType",
+    "baseColour",
+    "season",
+    "usage",
+    "productDisplayName",
+    "price",
+]
+generate_embeddings_multi(styles_df, column_names)
 print("Writing embeddings to file ...")
 styles_df.to_csv(STYLES_WITH_EMB_FILEPATH, index=False)
 print("Embeddings successfully stored in STYLES_WITH_EMB_FILEPATH")
@@ -553,67 +584,67 @@ def check_match(reference_image_base64, suggested_image_base64):
 
 ##########################下記はJyupyter Notebook用のコード########################
 
-# Set the path to the images and select a test image
-image_path = IMG_DIR
-test_images = TEST_IMAGE_FILENAMES
+# # Set the path to the images and select a test image
+# image_path = IMG_DIR
+# test_images = TEST_IMAGE_FILENAMES
 
-# Encode the test image to base64
-reference_image = image_path + test_images[0]
-encoded_image = encode_image_to_base64(reference_image)
+# # Encode the test image to base64
+# reference_image = image_path + test_images[0]
+# encoded_image = encode_image_to_base64(reference_image)
 
-# Select the unique subcategories from the DataFrame
-unique_subcategories = styles_df["articleType"].unique()
+# # Select the unique subcategories from the DataFrame
+# unique_subcategories = styles_df["articleType"].unique()
 
-# Analyze the image and return the results
-analysis = analyze_image(encoded_image, unique_subcategories)
-image_analysis = json.loads(analysis)
+# # Analyze the image and return the results
+# analysis = analyze_image(encoded_image, unique_subcategories)
+# image_analysis = json.loads(analysis)
 
-# Display the image and the analysis results
-display(Image(filename=reference_image))
-print("Image Analysis: ", image_analysis)
+# # Display the image and the analysis results
+# display(Image(filename=reference_image))
+# print("Image Analysis: ", image_analysis)
 
-# Extract the relevant features from the analysis
-item_descs = image_analysis["items"]
-item_category = image_analysis["category"]
-item_gender = image_analysis["gender"]
+# # Extract the relevant features from the analysis
+# item_descs = image_analysis["items"]
+# item_category = image_analysis["category"]
+# item_gender = image_analysis["gender"]
 
 
-# Filter data such that we only look through the items of the same gender (or unisex) and different category
-filtered_items = styles_df.loc[styles_df["gender"].isin([item_gender, "Unisex"])]
-filtered_items = filtered_items[filtered_items["articleType"] != item_category]
-print(str(len(filtered_items)) + " Remaining Items")
+# # Filter data such that we only look through the items of the same gender (or unisex) and different category
+# filtered_items = styles_df.loc[styles_df["gender"].isin([item_gender, "Unisex"])]
+# filtered_items = filtered_items[filtered_items["articleType"] != item_category]
+# print(str(len(filtered_items)) + " Remaining Items")
 
-# Find the most similar items based on the input item descriptions
-matching_items = find_matching_items_with_rag(filtered_items, item_descs)
+# # Find the most similar items based on the input item descriptions
+# matching_items = find_matching_items_with_rag(filtered_items, item_descs)
 
-# Display the matching items (this will display 2 items for each description in the image analysis)
-html = ""
-paths = []
-for i, item in enumerate(matching_items):
-    item_id = item["id"]
+# # Display the matching items (this will display 2 items for each description in the image analysis)
+# html = ""
+# paths = []
+# for i, item in enumerate(matching_items):
+#     item_id = item["id"]
 
-    # Path to the image file
-    image_path = f"examples/data/sample_clothes/sample_images/{item_id}.jpg"
-    paths.append(image_path)
-    html += f'<img src="{image_path}" style="display:inline;margin:1px"/>'
+#     # Path to the image file
+#     image_path = f"examples/data/sample_clothes/sample_images/{item_id}.jpg"
+#     paths.append(image_path)
+#     html += f'<img src="{image_path}" style="display:inline;margin:1px"/>'
 
-# Print the matching item description as a reminder of what we are looking for
-print(item_descs)
-# Display the image
-display(HTML(html))
+# # Print the matching item description as a reminder of what we are looking for
+# print(item_descs)
+# # Display the image
+# display(HTML(html))
 
-# Select the unique paths for the generated images
-paths = list(set(paths))
+# # Select the unique paths for the generated images
+# paths = list(set(paths))
 
-for path in paths:
-    # Encode the test image to base64
-    suggested_image = encode_image_to_base64(path)
+# for path in paths:
+#     # Encode the test image to base64
+#     suggested_image = encode_image_to_base64(path)
 
-    # Check if the items match
-    match = json.loads(check_match(encoded_image, suggested_image))
+#     # Check if the items match
+#     match = json.loads(check_match(encoded_image, suggested_image))
 
-    # Display the image and the analysis results
-    if match["answer"] == "yes":
-        display(Image(filename=path))
-        print("The items match!")
-        print(match["reason"])
+#     # Display the image and the analysis results
+#     if match["answer"] == "yes":
+#         display(Image(filename=path))
+#         print("The items match!")
+#         print(match["reason"])

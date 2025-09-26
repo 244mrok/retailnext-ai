@@ -42,5 +42,27 @@
       "name": "ID Men Blue Casual Shoes",
       "price": 130
     }
+  ],
+  "m_dot_williams_at_outlook_dot_com": [
+    {
+      "img": "examples/data/sample_clothes/sample_images/38974.jpg",
+      "name": "Nike Men Black Polo Tshirts",
+      "price": 55
+    },
+    {
+      "img": "examples/data/sample_clothes/sample_images/44582.jpg",
+      "name": "Lee Men Blue Party Jeans",
+      "price": 199
+    },
+    {
+      "img": "examples/data/sample_clothes/sample_images/56701.jpg",
+      "name": "Fabindia Men Striped White Kurta",
+      "price": 121
+    },
+    {
+      "img": "examples/data/sample_clothes/sample_images/20671.jpg",
+      "name": "Classic Polo Men Striped White Sweatshirt",
+      "price": 87
+    }
   ]
 }

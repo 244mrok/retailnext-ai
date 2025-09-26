@@ -6,5 +6,9 @@
   "sjohn_at_example_dot_com": {
     "path": "examples/data/sample_clothes/sample_banner/banner_man_blue_400k.jpg",
     "reason": "The selected banner features a blue color which is the user's favorite, targets men, and has a formal mood suitable for the user's taste."
+  },
+  "m_dot_williams_at_outlook_dot_com": {
+    "path": "examples/data/sample_clothes/sample_banner/banner_man_blue_400k.jpg",
+    "reason": "The selected banner features a blue formal attire targeted at men, which aligns with Michael's gender and preference for formal wear. Additionally, the blue color complements black well, making it visually appealing for him."
   }
 }

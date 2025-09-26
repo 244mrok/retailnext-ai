@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     try {
-      showLoading(true);
+      showChatLoading(true);
       const userMsg = input.value.trim();
       const imageFile = imageInput.files[0];
 
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (err) {
       messages.innerHTML += `<div style="color:red; margin-bottom:8px;"><b>エラー:</b> ${err.message}</div>`;
     } finally {
-      showLoading(false);
+      showChatLoading(false);
     }
     messages.scrollTop = messages.scrollHeight;
   });
@@ -241,6 +241,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function showLoading(show) {
   const overlay = document.getElementById('loading-overlay');
   overlay.style.display = show ? 'flex' : 'none';
+}
+
+function showChatLoading(show) {
+  document.getElementById('chatbot-loading').style.display = show ? 'block' : 'none';
 }
 
 
