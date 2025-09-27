@@ -274,8 +274,12 @@ def build_query(payload: SearchReq):
             {
                 "multi_match": {
                     "query": payload.q,
-                    "fields": ["productDisplayName^3", "articleType", "subCategory"],
-                    "fuzziness": "AUTO",
+                    "type": "bool_prefix",
+                    "fields": [
+                        "productDisplayName_sayt",
+                        "productDisplayName_sayt._2gram",
+                        "productDisplayName_sayt._3gram",
+                    ],
                 }
             }
         )
@@ -337,7 +341,12 @@ def search(payload: SearchReq):
         for h in resp["hits"]["hits"]
     ]
     return {
-        "hits": hits,
+        "hits": {
+            "hits": [
+                {"_source": {**h["_source"], "id": h["_id"], "score": h["_score"]}}
+                for h in resp["hits"]["hits"]
+            ]
+        },
         "total": resp["hits"]["total"]["value"],
         "facets": facets,
         "page": payload.page,
@@ -365,7 +374,8 @@ def suggest(req: SuggestReq):
     }
     r = client.search(index=INDEX, body=body)
     opts = r["suggest"]["name"][0].get("options", [])
-    return {"suggestions": [o["text"] for o in opts]}
+    # return {"suggestions": [o["text"] for o in opts]}
+    return {"hits": [o["_source"] for o in opts]}
 
 
 class TypeAheadReq(BaseModel):

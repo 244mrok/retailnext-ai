@@ -2,6 +2,7 @@
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', function () {
+  window.scrollTo(0, 0);
   showLoading(false); // 画面ロード直後にローディング非表示
 
   // DOM要素の取得
@@ -286,13 +287,13 @@ query.addEventListener("input", debounce(async e => {
   // const s = await call("typeahead", { prefix });
 
   ul.innerHTML = (s.suggestions
-    ? s.suggestions
-    : s.hits.map(h => h.productDisplayName)
+    ? s.suggestions.map(t => ({ name: t, id: "" })) // suggestionsが文字列のみの場合
+    : s.hits.map(h => ({ name: h.productDisplayName, id: h.id }))
   ).map(t =>
-    `<li onclick="document.getElementById('query').value='${t}'; ul.style.display='none';">
-    <span class="suggest-icon">🔍</span>
-    <span>${t}</span>
-  </li>`
+    `<li onclick="document.getElementById('query').value='${t.name}'; ul.style.display='none';">
+      <img src="examples/data/sample_clothes/sample_images/${t.id}.jpg" class="suggest-img";">
+     <span>${t.name}</span>
+    </li>`
   ).join('');
   ul.style.display = ul.innerHTML ? "block" : "none";
 }, 120));
@@ -319,3 +320,90 @@ function showSuggest(items) {
   ).join('');
   suggest.style.display = "block";
 }
+
+// 検索実行関数
+// 検索実行＆描画関数
+async function searchAndRender({ sort = "score", page = 1, per_page = 24 } = {}) {
+  const queryInput = document.getElementById("query");
+  const q = queryInput.value.trim();
+  const main = document.querySelector("main");
+
+  // ローディング表示
+  main.innerHTML = `<div style="text-align:center; color:#374151; padding:48px 0;">Searching...</div>`;
+
+  try {
+    // 検索API呼び出し
+    const res = await search({ q, sort, page, per_page });
+
+    // OpenSearch形式のパース
+    const items = (res.hits && res.hits.hits)
+      ? res.hits.hits.map(hit => hit._source)
+      : [];
+
+    if (!items.length) {
+      main.innerHTML = `<div style="text-align:center; color:#374151; padding:48px 0;">No results found.</div>`;
+      return;
+    }
+
+    // 並び替えUI
+    const sortOptions = [
+      { value: "score", label: "Relevance" },
+      { value: "price_asc", label: "Price: Low to High" },
+      { value: "price_desc", label: "Price: High to Low" },
+    ];
+    const sortSelect = `
+      <div class="text-right mb-4">
+        <label for="sort-select" style="margin-right:8px;">Sort by:</label>
+        <select id="sort-select" style="padding:4px 8px; border-radius:4px; border:1px solid #e5e7eb;">
+          ${sortOptions.map(opt => `<option value="${opt.value}"${sort === opt.value ? " selected" : ""}>${opt.label}</option>`).join("")}
+        </select>
+      </div>
+    `;
+
+    // 商品リストHTML
+    const itemsHtml = `
+      <section class="py-16">
+        <div class="container mx-auto px-4">
+          <h2 class="text-3xl font-bold text-center mb-8">Search Results</h2>
+          ${sortSelect}
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+            ${items.map(item => `
+              <div class="group">
+                <div class="aspect-[3/4] bg-gray-100 rounded-lg overflow-hidden mb-2">
+                  <img
+                    src="examples/data/sample_clothes/sample_images/${item.id}.jpg"
+                    alt="${item.productDisplayName}"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <h3 class="font-bold">${item.productDisplayName}</h3>
+                <p class="text-gray-600">$${item.price}</p>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      </section>
+    `;
+
+    main.innerHTML = itemsHtml;
+
+    // 並び替えイベント
+    document.getElementById("sort-select").onchange = function () {
+      searchAndRender({ sort: this.value, page: 1, per_page });
+    };
+  } catch (err) {
+    main.innerHTML = `<div style="color:red; text-align:center; padding:48px 0;">Search error: ${err.message}</div>`;
+  }
+}
+
+// 検索ボタン・Enterキーで検索実行
+document.getElementById("search-btn").addEventListener("click", () => searchAndRender());
+document.getElementById("query").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") searchAndRender();
+});
+
+document.getElementById("logo-link").addEventListener("click", function (e) {
+  e.preventDefault();
+  window.scrollTo(0, 0); // まずトップにスクロール
+  window.location.reload();
+});

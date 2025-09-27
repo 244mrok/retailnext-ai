@@ -102,3 +102,12 @@ body {
   color: #374151;
   font-size: 16px;
 }
+
+.suggest-img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
