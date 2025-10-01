@@ -1,7 +1,7 @@
 {
   "emily_dot_j_at_gmail_dot_com": {
     "path": "examples/data/sample_clothes/sample_banner/banner_red_100k.jpg",
-    "reason": "The selected banner features a red color, which is Emily's favorite color, and targets women with a formal mood, aligning well with her specifications."
+    "reason": "The selected banner features a main color of red, which is the user's favorite color, and is targeted towards women. It also conveys a formal mood, aligning with the user's potential interest in stylish and professional attire."
   },
   "sjohn_at_example_dot_com": {
     "path": "examples/data/sample_clothes/sample_banner/banner_man_blue_400k.jpg",

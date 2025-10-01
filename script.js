@@ -2,7 +2,6 @@
 let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', function () {
-  window.scrollTo(0, 0);
   showLoading(false); // 画面ロード直後にローディング非表示
 
   // DOM要素の取得
