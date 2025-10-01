@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from opensearchpy import OpenSearch
 from cookbook_rag import (
-    encode_image_to_base64,  # 使っていないなら削除可
+    encode_image_to_base64,
     analyze_image,
     find_matching_items_with_rag,
     styles_df,
@@ -42,10 +42,28 @@ app.mount("/images", StaticFiles(directory=str(IMG_DIR)), name="images")
 async def chatbot_answer(email: str = Form(...), question: str = Form(...)):
     customer_id = get_customer_id_by_email(email)
     if customer_id is None:
-        return "<div style='color:red;'>customer id is not found</div>"
+        return """
+        <div class="chat-message bot-message">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content error">
+                Customer ID not found. Please check your email.
+                <div class="message-timestamp">just now</div>
+            </div>
+        </div>
+        """
+
     answer = answer_with_order_and_customer_history(question, customer_id)
-    # HTMLで返す（チャットボット内で表示可能）
-    return f"<div style='color:#374151; margin:8px 0;'><b>Bot:</b> {answer}</div>"
+
+    # ボットメッセージのみ返す（ユーザーメッセージはJS側で表示）
+    return f"""
+    <div class="chat-message bot-message">
+        <div class="message-avatar">🤖</div>
+        <div class="message-content">
+            {answer}
+            <div class="message-timestamp">just now</div>
+        </div>
+    </div>
+    """
 
 
 ##本当はviewをjsでやるべきだが、簡易的にここでhtmlを生成して返す

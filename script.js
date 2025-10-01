@@ -54,87 +54,163 @@ document.addEventListener('DOMContentLoaded', function () {
   const messages = document.getElementById('chatbot-messages');
   const imageInput = document.getElementById('chatbot-image');
 
-  imageInput.addEventListener('change', function () {
+  imageInput.addEventListener('change', async function () {
     const imageFile = imageInput.files[0];
     if (imageFile) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        messages.innerHTML += `<div style="margin-bottom:8px;"><b>You:</b> Image Uploaded<br>
-        <img src="${e.target.result}" alt="Uploaded Image" style="max-width:120px; max-height:120px; border-radius:8px; margin-top:4px;"/>`;
+      try {
+        showChatLoading(true);
+
+        // 画像アップロード時のユーザーメッセージ
+        const userName = currentUser ? currentUser : "You";
+        const userInitial = userName.charAt(0).toUpperCase();
+
+        messages.innerHTML += `
+        <div class="chat-message user-message">
+          <div class="message-avatar">${userInitial}</div>
+          <div class="message-content">
+            <img src="${URL.createObjectURL(imageFile)}" alt="Uploaded Image" style="max-width:120px; max-height:120px; border-radius:8px; margin-bottom:8px; display:block;"/>
+            Image uploaded for recommendations
+            <div class="message-timestamp">just now</div>
+          </div>
+        </div>
+      `;
+
+        const formData = new FormData();
+        formData.append('file', imageFile);
+
+        const response = await fetch('http://localhost:8000/recommendwithselected', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        const data = await response.json();
+
+        if (data.recommendations && data.recommendations.html) {
+          messages.innerHTML += `
+          <div class="chat-message bot-message">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              Here are some recommendations for you:
+              <div style="margin-top:8px;">
+                ${data.recommendations.html}
+              </div>
+              <div class="message-timestamp">just now</div>
+            </div>
+          </div>
+        `;
+        } else {
+          messages.innerHTML += `
+          <div class="chat-message bot-message">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              Sorry, I couldn't find any recommendations for this image.
+              <div class="message-timestamp">just now</div>
+            </div>
+          </div>
+        `;
+        }
+
+        imageInput.value = '';
         messages.scrollTop = messages.scrollHeight;
-      };
-      reader.readAsDataURL(imageFile);
+
+      } catch (err) {
+        messages.innerHTML += `
+        <div class="chat-message bot-message">
+          <div class="message-avatar">⚠️</div>
+          <div class="message-content error">
+            Error: ${err.message}
+            <div class="message-timestamp">just now</div>
+          </div>
+        </div>
+      `;
+      } finally {
+        showChatLoading(false);
+      }
     }
   });
 
+  // チャットボット関連の処理を修正
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     try {
       showChatLoading(true);
       const userMsg = input.value.trim();
-      const imageFile = imageInput.files[0];
+      // const imageFile = imageInput.files[0]; // この行を削除
 
       if (userMsg) {
-        const userLabel = currentUser ? `${currentUser}` : "You";
-        messages.innerHTML += `<div style="margin-bottom:8px;"><b>${userLabel}:</b> ${userMsg}</div>`;
+        // ユーザーメッセージの表示
+        const userName = currentUser ? currentUser : "You";
+        const userInitial = userName.charAt(0).toUpperCase();
+
+        messages.innerHTML += `
+        <div class="chat-message user-message">
+          <div class="message-avatar">${userInitial}</div>
+          <div class="message-content">
+            ${userMsg}
+            <div class="message-timestamp">just now</div>
+          </div>
+        </div>
+      `;
+
         input.value = '';
+
+        // APIからボット返答を取得
         const formData = new FormData();
         formData.append('email', currentUser ? currentUser : 'unknown');
         formData.append('question', userMsg);
+
         const res = await fetch('http://localhost:8000/chatbot_answer', {
           method: 'POST',
           body: formData
         });
+
         if (!res.ok) throw new Error(`API Error: ${res.status}`);
         const html = await res.text();
-        document.getElementById('chatbot-messages').innerHTML += html;
+        messages.innerHTML += html;
       }
 
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append('file', imageFile);
-        const response = await fetch('http://localhost:8000/recommendwithselected', {
-          method: 'POST',
-          body: formData
-        });
-        if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        const data = await response.json();
-        console.log("API Response:", data);
-        if (data.recommendations) {
-          messages.innerHTML += `<div style="margin-bottom:8px;"><b>Bot:</b> Recommend Items:</div>`;
-          messages.innerHTML += data.recommendations.html;
-        } else {
-          messages.innerHTML += `<div style="margin-bottom:8px;"><b>Bot:</b> Recommend Items not found.</div>`;
-        }
-        messages.scrollTop = messages.scrollHeight;
-        imageInput.value = '';
-      }
+      // if (imageFile) { ... } の部分をすべて削除
+
     } catch (err) {
-      messages.innerHTML += `<div style="color:red; margin-bottom:8px;"><b>エラー:</b> ${err.message}</div>`;
+      messages.innerHTML += `
+      <div class="chat-message bot-message">
+        <div class="message-avatar">⚠️</div>
+        <div class="message-content error">
+          Error: ${err.message}
+          <div class="message-timestamp">just now</div>
+        </div>
+      </div>
+    `;
     } finally {
       showChatLoading(false);
     }
+
+    // スクロールを最下部に
     messages.scrollTop = messages.scrollHeight;
   });
 
-  // ログインモーダル表示（例: ユーザーアイコン押下で表示）
-  const userBtn = document.getElementById('user-btn');
-  if (userBtn) {
-    userBtn.addEventListener('click', () => {
-      document.getElementById('login-modal').style.display = 'flex';
-    });
-  }
-
-  // ログイン処理（Mock）
+  // ログイン成功時のメッセージも修正
   document.getElementById('login-btn').addEventListener('click', async function () {
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
+
     if (username && password) {
-      currentUser = username; // ユーザー名を保持
+      currentUser = username;
       document.getElementById('login-modal').style.display = 'none';
-      // チャット欄にログインユーザー名を表示
+
+      // ログイン成功メッセージをアバター付きで表示
       const messages = document.getElementById('chatbot-messages');
-      messages.innerHTML += `<div style="margin-bottom:8px; color:#374151;"> ${currentUser} logged in</div>`;
+      messages.innerHTML += `
+      <div class="chat-message bot-message">
+        <div class="message-avatar">✅</div>
+        <div class="message-content" style="background: #34C759; color: white;">
+          Welcome back, ${currentUser}! You are now logged in.
+          <div class="message-timestamp">just now</div>
+        </div>
+      </div>
+    `;
+      messages.scrollTop = messages.scrollHeight;
 
       try {
         showLoading(true);
@@ -151,6 +227,15 @@ document.addEventListener('DOMContentLoaded', function () {
       alert('Please enter your username and password');
     }
   });
+
+  // ログインモーダル表示（例: ユーザーアイコン押下で表示）
+  const userBtn = document.getElementById('user-btn');
+  if (userBtn) {
+    userBtn.addEventListener('click', () => {
+      document.getElementById('login-modal').style.display = 'flex';
+    });
+  }
+
 
   // jsではCurrent User = email
   async function fetchBestBanner(email) {
@@ -321,7 +406,7 @@ function showSuggest(items) {
 }
 
 // 検索実行関数
-// 検索実行＆描画関数
+// 検索実行＆描画関数 関数名がダサい
 async function searchAndRender({ sort = "score", page = 1, per_page = 24 } = {}) {
   const queryInput = document.getElementById("query");
   const q = queryInput.value.trim();
