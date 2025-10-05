@@ -5,7 +5,7 @@
   },
   "sjohn_at_example_dot_com": {
     "path": "examples/data/sample_clothes/sample_banner/banner_man_blue_400k.jpg",
-    "reason": "The selected banner features a blue color which is the user's favorite, targets men, and has a formal mood suitable for the user's taste."
+    "reason": "This banner features blue, which is the user's favorite color, and fits the formal mood preference. Additionally, it specifically targets men, aligning perfectly with the user's specifications."
   },
   "m_dot_williams_at_outlook_dot_com": {
     "path": "examples/data/sample_clothes/sample_banner/banner_man_blue_400k.jpg",
